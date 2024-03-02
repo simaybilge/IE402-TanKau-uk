@@ -43,6 +43,7 @@ public class GifflerThompson {
             }
             System.out.println("order: " + (i + 1) + " truck id: " + orderedList.get(i).getId() + " critical ratio: " + String.format("%.2f",orderedList.get(i).getCriticalRatio()));
         }
+        System.out.println("order: " + (20) + " truck id: " + orderedList.get(19).getId() + " critical ratio: " + String.format("%.2f",orderedList.get(19).getCriticalRatio()));
     }
     private static Truck findNextBestRatioAndRemove(HashMap<Truck,Double> criticalRatioList) {
         Truck best = null;
