@@ -1,4 +1,5 @@
 import java.util.*;
+
 public class GifflerThompson {
     //public static final int[] daysOfWeek = {0, 1, 2, 3, 4}; // Example: Operating on weekdays
     //public static final int NUMBER_OF_WORKERS = 5;
@@ -23,25 +24,25 @@ public class GifflerThompson {
         for (int i = 0; i < trucks.size(); i++) {
             criticalRatioList.put(trucks.get(i), trucks.get(i).getCriticalRatio());
         }
-
+        System.out.println(" ");
+        System.out.println("Version ordered according to critical ratio: ");
         for (int i = 0; i < trucks.size(); i++) {
             orderedList.add(findNextBestRatioAndRemove(criticalRatioList));
             System.out.println("order: " + (i + 1) + " truck id: " + orderedList.get(i).getId() + " critical ratio: " + String.format("%.2f",orderedList.get(i).getCriticalRatio()));
         }
-        /*System.out.println("********************");
+        System.out.println(" ");
+        System.out.println("Version ordered according to priority: ");
         for (int i = 0; i < 19; i++) { //0'dan 18'e
             if(orderedList.get(i).getCriticalRatio() == orderedList.get(i+1).getCriticalRatio()){
                 if(orderedList.get(i).getPriority() < orderedList.get(i+1).getPriority()){
-                    Truck temp = new Truck(999);
+                    Truck temp = null;
                     temp = orderedList.get(i);
-                    orderedList.remove(i);
-                    orderedList.add(i,orderedList.get(i+1));
-                    orderedList.remove(i+1);
-                    orderedList.add(i+1,temp);
+                    orderedList.set(i,orderedList.get(i+1));
+                    orderedList.set(i+1,temp);
                 }
             }
             System.out.println("order: " + (i + 1) + " truck id: " + orderedList.get(i).getId() + " critical ratio: " + String.format("%.2f",orderedList.get(i).getCriticalRatio()));
-        }*/
+        }
     }
     private static Truck findNextBestRatioAndRemove(HashMap<Truck,Double> criticalRatioList) {
         Truck best = null;
@@ -55,5 +56,4 @@ public class GifflerThompson {
         criticalRatioList.remove(best);
         return best;
     }
-
 }
