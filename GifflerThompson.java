@@ -5,33 +5,33 @@ public class GifflerThompson {
     //public static final int NUMBER_OF_WORKERS = 5;
     //public static final double OPERATING_HOURS_PER_DAY = 8 * 60; // 8 hours in minutes
 
-    /*Step 1: Bütün truckları okuycak listeleri doldurucak (done)
-    Step 2: Bütün trucklar için critical ratio hesaplanacak ve bir listede storelanacak (done)
-    Step 3: Critical ratio listesi sıralanacak ((due time-arrival time)/process time) (done)
+    /*Step 1: Bütün truckları okuycak listeleri doldurucak (DONE)
+    Step 2: Bütün trucklar için critical ratio hesaplanacak ve bir listede storelanacak (DONE)
+    Step 3: Critical ratio listesi sıralanacak ((due time-arrival time)/process time) (DONE)
     Step 4: Worker, due time, foreign/domestic constraintlerine göre sıralar hesaplacak (setup cost??)
 
         1) foreign ise sadece perşembe/cuma işlenebilir
         2) aynı anda docked ve not docked çalışabilir, iki tane aynı tip çalışamaz
         3) aynı anda çalışan kamyonların toplam worker sayısı en fazla 5 olabilir
-        4) critical ratio negatif olursa sıranın en sonuna at (sadece bir taneden penalty yemek için)
+        4) critical ratio negatif olursa sıranın en sonuna at (sadece bir taneden penalty yemek için) (DONE)
+        5) priority'ye göre sıralasın
     */
     public static void main(String[] args) {
 
         ArrayList<Truck> trucks = Truck.generateTrucksFromCSV("tan_kaucuk_data.csv");
         ArrayList<Truck> orderedList = new ArrayList<Truck>();
         HashMap<Truck, Double> criticalRatioList = new HashMap<>();
-
         for (int i = 0; i < trucks.size(); i++) {
             criticalRatioList.put(trucks.get(i), trucks.get(i).getCriticalRatio());
         }
+
+        System.out.println("Version ordered according to priority: ");
         System.out.println(" ");
-        System.out.println("Version ordered according to critical ratio: ");
         for (int i = 0; i < trucks.size(); i++) {
             orderedList.add(findNextBestRatioAndRemove(criticalRatioList));
-            System.out.println("order: " + (i + 1) + " truck id: " + orderedList.get(i).getId() + " critical ratio: " + String.format("%.2f",orderedList.get(i).getCriticalRatio()));
+
         }
-        System.out.println(" ");
-        System.out.println("Version ordered according to priority: ");
+
         for (int i = 0; i < 19; i++) { //0'dan 18'e
             if(orderedList.get(i).getCriticalRatio() == orderedList.get(i+1).getCriticalRatio()){
                 if(orderedList.get(i).getPriority() < orderedList.get(i+1).getPriority()){
