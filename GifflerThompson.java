@@ -71,6 +71,7 @@ public class GifflerThompson {
             System.out.println("Number of workers needed: " + notDockedOrderedList.get(i).getNeededWorkers());
             System.out.println("Is it a foreign truck? : " + notDockedOrderedList.get(i).getIsForeign());
             System.out.println("---------------------------------------");
+            System.out.println("simay");
         }
 
     }
