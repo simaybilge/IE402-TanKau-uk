@@ -1,8 +1,9 @@
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class GifflerThompson {
     static ArrayList<Truck> trucks = Truck.generateTrucksFromCSV("tan_kaucuk_data.csv");
-    static ArrayList<Truck> orderedList = new ArrayList<>();
+    static ArrayList<Truck> orderedList = new ArrayList<Truck>();
     static ArrayList<Truck> dockedOrderedList = new ArrayList<>();
     static ArrayList<Truck> notDockedOrderedList = new ArrayList<>();
     static HashMap<Truck, Double> criticalRatioList = new HashMap<>();
@@ -12,14 +13,13 @@ public class GifflerThompson {
     public static void main(String[] args) {
         calculateQueues();
         processWeek(dockedOrderedList,notDockedOrderedList,dockedAvailable,notDockedAvailable);
-        //simooooo
     }
 
     public static void calculateQueues() {
         for (int i = 0; i < trucks.size(); i++) {
             criticalRatioList.put(trucks.get(i), trucks.get(i).getCriticalRatio());
         }
-
+    //Bu bir yardım çağrısıdır
         System.out.println("Version ordered according to priority: ");
         System.out.println(" ");
         for (int i = 0; i < trucks.size(); i++) {
@@ -71,7 +71,6 @@ public class GifflerThompson {
             System.out.println("Number of workers needed: " + notDockedOrderedList.get(i).getNeededWorkers());
             System.out.println("Is it a foreign truck? : " + notDockedOrderedList.get(i).getIsForeign());
             System.out.println("---------------------------------------");
-            System.out.println("simay");
         }
 
     }
