@@ -1,9 +1,8 @@
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class GifflerThompson {
     static ArrayList<Truck> trucks = Truck.generateTrucksFromCSV("tan_kaucuk_data.csv");
-    static ArrayList<Truck> orderedList = new ArrayList<Truck>();
+    static ArrayList<Truck> orderedList = new ArrayList<>();
     static ArrayList<Truck> dockedOrderedList = new ArrayList<>();
     static ArrayList<Truck> notDockedOrderedList = new ArrayList<>();
     static HashMap<Truck, Double> criticalRatioList = new HashMap<>();
@@ -15,14 +14,14 @@ public class GifflerThompson {
 
     public static void main(String[] args) {
         calculateQueues();
-        processWeek(orderedList,dockedAvailable,notDockedAvailable,availableWorkers);
+        processWeek(orderedList);
     }
 
     public static void calculateQueues() {
-        for (int i = 0; i < trucks.size(); i++) {
-            criticalRatioList.put(trucks.get(i), trucks.get(i).getCriticalRatio());
+        for(Truck t: trucks) {
+            criticalRatioList.put(t, t.getCriticalRatio());
         }
-    //Bu bir yardım çağrısıdır
+
         for (int i = 0; i < trucks.size(); i++) {
             orderedList.add(findNextBestRatioAndRemove(criticalRatioList));
         }
@@ -45,7 +44,6 @@ public class GifflerThompson {
                 notDockedOrderedList.add(t);
             }
         }
-
 
         System.out.println("List of docked trucks ordered according to critical ratio and priority: ");
         System.out.println(" ");
@@ -104,7 +102,7 @@ public class GifflerThompson {
         return nextTruck;
     }
 
-    public static void processWeek(ArrayList<Truck> orderedList, boolean dockedAvailable, boolean notDockedAvailable, int availableWorkers) {
+    public static void processWeek(ArrayList<Truck> orderedList) {
 
         Truck nextTruck = null;
         dockedAvailable = true;
