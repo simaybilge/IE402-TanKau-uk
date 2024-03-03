@@ -46,7 +46,7 @@ import java.util.*;
                 String[] arrivalDayList = br.readLine().split(",");
                 String[] arrivalTimeList = br.readLine().split(",");
                 String[] amountList = br.readLine().split(",");
-                String[] priorityList = br.readLine().split(",");
+                String[] priorityList = null;
                 String[] dueDayList = br.readLine().split(",");
                 String[] dueTimeList = br.readLine().split(",");
                 String[] workerList = br.readLine().split(",");
@@ -68,15 +68,11 @@ import java.util.*;
                 }
 
                 for(int i = 1; i < arrivalTimeList.length ; i++) {
-                    trucks.get(i-1).setArrivalTime(Integer.parseInt(arrivalTimeList[i])+((trucks.get(i-1).getArrivalDay()-1))*480);
+                    trucks.get(i-1).setArrivalTime(Integer.parseInt(arrivalTimeList[i])+((trucks.get(i-1).getArrivalDay()))*480);
                 }
 
                 for(int i = 1; i < amountList.length ; i++) {
                     trucks.get(i - 1).setPalletCount(Integer.parseInt(amountList[i]));
-                }
-
-                for(int i = 1; i < priorityList.length ; i++) {
-                    trucks.get(i-1).setPriority(Integer.parseInt(priorityList[i]));
                 }
 
                 for(int i = 1; i < dueDayList.length ; i++) {
@@ -84,7 +80,7 @@ import java.util.*;
                 }
 
                 for(int i = 1; i < dueTimeList.length ; i++) {
-                    trucks.get(i - 1).setDueTime(Integer.parseInt(dueTimeList[i])+(trucks.get(i-1).getDueDay()-1)*480);
+                    trucks.get(i - 1).setDueTime(Integer.parseInt(dueTimeList[i])+(trucks.get(i-1).getDueDay())*480);
                 }
 
                 for(int i = 1; i < workerList.length ; i++) {
@@ -96,13 +92,17 @@ import java.util.*;
                 }
 
                 for(int i = 1; i < truckIDList.length ; i++) {
-                    trucks.get(i - 1).setCriticalRatio((trucks.get(i - 1).getDueTime()-trucks.get(i - 1).getArrivalTime())/trucks.get(i - 1).getProcessTime());
+                    trucks.get(i - 1).setCriticalRatio((trucks.get(i - 1).getDueTime()-trucks.get(i - 1).getArrivalTime())/trucks.get(i - 1).getProcessTime()); // (due time-arrival time)/process time
                 }
 
-                // Print trucks
-                for (Truck truck : trucks) {
-                    truck.printTruck();
+                for(int i = 1; i < truckIDList.length ; i++){
+                    if(trucks.get(i-1).getIsForeign()){
+                        trucks.get(i-1).setPriority(1);
+                    } else {
+                        trucks.get(i-1).setPriority(0);
+                    }
                 }
+
                 return trucks;
 
             } catch (IOException e) {
@@ -143,22 +143,6 @@ import java.util.*;
         }
         public double getCriticalRatio() { return criticalRatio; }
         public void setCriticalRatio(double criticalRatio) { this.criticalRatio = criticalRatio; }
-
-       public void printTruck() {
-            System.out.println("-- TRUCK ID "+getId()+" --");
-            System.out.println("Is Foreign: " + getIsForeign());
-            System.out.println("Arrival Day: " + getArrivalDay());
-            System.out.println("Arrival Time: " + getArrivalTime());
-            System.out.println("Palette Count: " + getPalletCount());
-            System.out.println("Process Time: " + getProcessTime());
-            System.out.println("Priority: " + getPriority()); //yeni
-            System.out.println("Due Day: " + getDueDay());
-            System.out.println("Due Time: " + getDueTime());
-            System.out.println("Critical Ratio: " + getCriticalRatio());
-            System.out.println("Number of Worker: " + getNeededWorkers());
-            System.out.println("Is Docked: " + getIsDocked());
-            System.out.println("---------------------------");
-        }
     }
 
 
