@@ -1,9 +1,8 @@
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class GifflerThompson {
     static ArrayList<Truck> trucks = Truck.generateTrucksFromCSV("tan_kaucuk_data.csv");
-    static ArrayList<Truck> orderedList = new ArrayList<Truck>();
+    static ArrayList<Truck> orderedList = new ArrayList<>();
     static ArrayList<Truck> dockedOrderedList = new ArrayList<>();
     static ArrayList<Truck> notDockedOrderedList = new ArrayList<>();
     static HashMap<Truck, Double> criticalRatioList = new HashMap<>();
@@ -13,6 +12,7 @@ public class GifflerThompson {
     public static void main(String[] args) {
         calculateQueues();
         processWeek(dockedOrderedList,notDockedOrderedList,dockedAvailable,notDockedAvailable);
+        //simooooo
     }
 
     public static void calculateQueues() {
