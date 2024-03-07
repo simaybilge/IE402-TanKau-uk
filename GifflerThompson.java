@@ -11,6 +11,7 @@ public class GifflerThompson {
     static int availableWorkers  = 5;
     static int day = 0;
     static int minute = 0;
+    static int negativeCounter = 0;
 
     public static void main(String[] args) {
         calculateQueues();
@@ -20,10 +21,18 @@ public class GifflerThompson {
     public static void calculateQueues() {
         for(Truck t: trucks) {
             criticalRatioList.put(t, t.getCriticalRatio());
+            orderedList.add(t);
         }
 
         for (int i = 0; i < trucks.size(); i++) {
-            orderedList.add(findNextBestRatioAndRemove(criticalRatioList));
+            Truck addingTruck = findNextBestRatioAndRemove(criticalRatioList);
+
+            if(addingTruck.getCriticalRatio()>=0) {
+                orderedList.set(i,addingTruck);
+            } else {
+                orderedList.set(orderedList.size()-1-negativeCounter,addingTruck);
+                negativeCounter++;
+            }
         }
 
         for (int i = 0; i < orderedList.size()-1; i++) { //0'dan 18'e
@@ -75,15 +84,15 @@ public class GifflerThompson {
         }
 
     }
-
+    // en büyük ratio değil en küçük ratio önce olacak ama negatif olanlar sıranın sonunda olacak (negatifler arasında büyük-küçük fark ediyor mu random mu atıyor karar vermek lazım)
     private static Truck findNextBestRatioAndRemove(HashMap<Truck, Double> criticalRatioList) {
         Truck best = null;
-        double bestRatio = -Integer.MAX_VALUE;
+        double bestRatio = Integer.MAX_VALUE;
         for (Truck s : criticalRatioList.keySet()) {
-            if (criticalRatioList.get(s) > bestRatio) {
-                bestRatio = criticalRatioList.get(s);
-                best = s;
-            }
+                if (criticalRatioList.get(s) < bestRatio) {
+                    bestRatio = criticalRatioList.get(s);
+                    best = s;
+                }
         }
         criticalRatioList.remove(best);
         return best;
@@ -104,9 +113,8 @@ public class GifflerThompson {
 
     public static void processWeek(ArrayList<Truck> orderedList) {
 
-        Truck nextTruck = null;
-        dockedAvailable = true;
-        notDockedAvailable = true;
+        dockedAvailable = false;
+        notDockedAvailable = false;
         availableWorkers = 5;
         int dockedStartTime = 0;
         int notDockedStartTime = 0;
@@ -115,6 +123,8 @@ public class GifflerThompson {
             for (minute = 0; minute <= 480; minute++) {
                 for(int aTruck = 0; aTruck < orderedList.size(); aTruck++) {
 
+                    Truck nextTruck = chooseNextTruckAndRemove(orderedList,availableWorkers);
+                    
                     if (nextTruck.getIsDocked()) {
                         if (dockedAvailable) {
                             dockedStartTime = day*480+minute;
@@ -124,9 +134,7 @@ public class GifflerThompson {
                             } while (minute < (dockedStartTime + nextTruck.getProcessTime()));
                         }
                         System.out.println(nextTruck.getId());
-                    }
-
-                    if (!nextTruck.getIsDocked()) {
+                    } else {
                         if (notDockedAvailable) {
                             notDockedStartTime = day*480+minute;
                             do {
