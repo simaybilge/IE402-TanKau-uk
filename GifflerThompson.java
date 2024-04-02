@@ -2,153 +2,221 @@ import java.util.*;
 
 public class GifflerThompson {
     static ArrayList<Truck> trucks = Truck.generateTrucksFromCSV("tan_kaucuk_data.csv");
+    static HashMap<Truck, Integer> arrivalTimeList = new HashMap<>();
     static ArrayList<Truck> orderedList = new ArrayList<>();
     static ArrayList<Truck> dockedOrderedList = new ArrayList<>();
     static ArrayList<Truck> notDockedOrderedList = new ArrayList<>();
-    static HashMap<Truck, Double> criticalRatioList = new HashMap<>();
-    static boolean dockedAvailable;
-    static boolean notDockedAvailable;
-    static int availableWorkers  = 5;
-    static int day = 0;
-    static int minute = 0;
-    static int negativeCounter = 0;
+    static Truck currentTruck;
+    static boolean dockedAvailable = true;
+    static boolean notDockedAvailable = true;
+    static int availableWorkers = 5;
+    static int endTime = 0;
+    static int neededWorkers = 0;
+    static int penaltyCost = 0;
+    static int setupCost = 0;
+    static boolean isDomestic = true;
+    static boolean isLate = false;
 
-    public static void main(String[] args) {
-        calculateQueues();
-        processWeek(orderedList);
-    }
+    public static void main(String[] args){
 
-    public static void calculateQueues() {
-        for(Truck t: trucks) {
-            criticalRatioList.put(t, t.getCriticalRatio());
-            orderedList.add(t);
+        for (Truck truck : trucks) {
+            arrivalTimeList.put(truck, truck.getArrivalTime());
         }
 
         for (int i = 0; i < trucks.size(); i++) {
-            Truck addingTruck = findNextBestRatioAndRemove(criticalRatioList);
-
-            if(addingTruck.getCriticalRatio()>=0) {
-                orderedList.set(i,addingTruck);
-            } else {
-                orderedList.set(orderedList.size()-1-negativeCounter,addingTruck);
-                negativeCounter++;
-            }
+            currentTruck = findNextBestArrivalAndRemove(arrivalTimeList);
+            orderedList.add(currentTruck);
         }
 
-        for (int i = 0; i < orderedList.size()-1; i++) { //0'dan 18'e
-            if (orderedList.get(i).getCriticalRatio() == orderedList.get(i + 1).getCriticalRatio()) {
-                if (orderedList.get(i).getPriority() < orderedList.get(i + 1).getPriority()) {
-                    Truck temp = null;
-                    temp = orderedList.get(i);
-                    orderedList.set(i, orderedList.get(i + 1));
-                    orderedList.set(i + 1, temp);
+        for(int i = 0; i < orderedList.size()-1; i++){
+            for(int j = 0; j < orderedList.size()-1; j++) { // kaçtan başlaması daha doğru olur
+                if (orderedList.get(i).getArrivalTime() == orderedList.get(j).getArrivalTime()) {
+                    if (orderedList.get(i).getDueTime() < orderedList.get(j).getDueTime()) {
+                        Truck temp;
+                        temp = orderedList.get(i);
+                        orderedList.set(i, orderedList.get(j));
+                        orderedList.set(j, temp);
+                    } else if(orderedList.get(i).getDueTime() == orderedList.get(j).getDueTime()){
+                        if (orderedList.get(i).getPriority() > orderedList.get(j).getPriority()) {
+                            Truck temp;
+                            temp = orderedList.get(i);
+                            orderedList.set(i, orderedList.get(j));
+                            orderedList.set(j, temp);
+                        }
+                    }
                 }
             }
         }
+
+        for (Truck truck : orderedList) {
+            if (truck.getIsDocked()) {
+                dockedOrderedList.add(truck);
+            } else {
+                notDockedOrderedList.add(truck);
+            }
+        }
+
+        for(int day = 0; day <= 4; day++){
+
+            System.out.println("Day: " + (day+1));
+            System.out.println("Docked ordered list according to day: ");
+            System.out.println(" ");
+
+            for (Truck value : dockedOrderedList) {
+                if (value.getArrivalDay() == day) {
+                    System.out.println("Truck ID: " + value.getId());
+                    System.out.println("Foreign/Domestic: " + value.getIsForeign());
+                    System.out.println("Critical Ratio: " + value.getCriticalRatio());
+                    System.out.println("Arrival Day: " + (value.getArrivalDay() + 1));
+                    System.out.println("Arrival Time: " + value.getArrivalTime());
+                    System.out.println("Due Day: " + value.getDueDay());
+                    System.out.println("Due Time: " + value.getDueTime());
+                    System.out.println("Priority: " + value.getPriority());
+                    System.out.println(" ");
+                    System.out.println("--------------------------------------------------");
+                }
+            }
+
+            System.out.println("Day: " + (day+1));
+            System.out.println("Not docked ordered list according to day: ");
+            System.out.println(" ");
+
+            for (Truck truck : notDockedOrderedList) {
+                if (truck.getArrivalDay() == day) {
+                    System.out.println("Truck ID: " + truck.getId());
+                    System.out.println("Foreign/Domestic: " + truck.getIsForeign());
+                    System.out.println("Critical Ratio: " + truck.getCriticalRatio());
+                    System.out.println("Arrival Day: " + (truck.getArrivalDay() + 1));
+                    System.out.println("Arrival Time: " + truck.getArrivalTime());
+                    System.out.println("Due Day: " + truck.getDueDay());
+                    System.out.println("Due Time: " + truck.getDueTime());
+                    System.out.println("Priority: " + truck.getPriority());
+                    System.out.println(" ");
+                    System.out.println("--------------------------------------------------");
+                }
+            }
+        }
+
+        for(int day = 0 ; day <= 4 ; day ++) { // endtime needed wrokers vs. iki sıra için ayrılacak
+            System.out.println("Day: " + (day + 1));
+            for (int minute = 0; minute < 480; minute++) {
+
+                if (dockedAvailable) {
+                    currentTruck = chooseCurrentTruckandRemove(dockedOrderedList,availableWorkers,day,minute);
+
+                    if (currentTruck != null) {
+                        dockedAvailable = false;
+                        currentTruck.setStartTime(day * 480 + minute);
+                        currentTruck.setEndTime(currentTruck.getStartTime() + currentTruck.getProcessTime());
+                        endTime = currentTruck.getEndTime();
+                        neededWorkers = currentTruck.getNeededWorkers();
+
+                        if(currentTruck.getEndTime() > currentTruck.getDueTime()){
+                            isLate = true;
+                            if(currentTruck.getIsForeign()){ penaltyCost +=500; }
+                            else { penaltyCost += 100; }
+                        } else {
+                            isLate = false;
+                        }
+
+                        if (currentTruck.getIsForeign() && isDomestic){
+                            setupCost += 200;
+                            isDomestic = false;
+                        } else if(!currentTruck.getIsForeign()){
+                            isDomestic = true;
+                        }
+                        System.out.println("Truck ID: " + currentTruck.getId() + " | Docked?: " + currentTruck.getIsDocked() + " | Arrival Time: " + currentTruck.getArrivalTime() + " | Process Time: " + currentTruck.getProcessTime() + " | End Time: " + currentTruck.getEndTime() + " | Due Time: " + currentTruck.getDueTime() + " | Number of Workers: " + currentTruck.getNeededWorkers() + " | Foreign?: " + currentTruck.getIsForeign() + " | Delay applied?: " + isLate);
+                    }
+                }
+                if ((day * 480 + minute) == endTime) {
+                    dockedAvailable = true;
+                    availableWorkers += neededWorkers;
+                }
+
+                if (notDockedAvailable) {
+                    currentTruck = chooseCurrentTruckandRemove(notDockedOrderedList,availableWorkers,day,minute);
+
+                    if (currentTruck != null) {
+                        notDockedAvailable = false;
+                        currentTruck.setStartTime(day * 480 + minute);
+                        currentTruck.setEndTime(currentTruck.getStartTime() + currentTruck.getProcessTime());
+                        endTime = currentTruck.getEndTime();
+                        neededWorkers = currentTruck.getNeededWorkers();
+
+                        if(currentTruck.getEndTime() > currentTruck.getDueTime()){
+                            isLate = true;
+                            if(currentTruck.getIsForeign()){ penaltyCost +=500; }
+                            else { penaltyCost += 100; }
+                        } else {
+                            isLate = false;
+                        }
+
+                        if (currentTruck.getIsForeign() && isDomestic){
+                            setupCost += 200;
+                            isDomestic = false;
+                        } else if(!currentTruck.getIsForeign()){
+                            isDomestic = true;
+                        }
+
+                        System.out.println("Truck ID: " + currentTruck.getId() + " | Docked?: " + currentTruck.getIsDocked() + " | Arrival Time: " + currentTruck.getArrivalTime() + " | Process Time: " + currentTruck.getProcessTime() + " | End Time: " + currentTruck.getEndTime() + " | Due Time: " + currentTruck.getDueTime() + " | Number of Workers: " + currentTruck.getNeededWorkers() + " | Foreign?: " + currentTruck.getIsForeign() + " | Delay applied?: " + isLate);
+
+                    }
+                } if ((day * 480 + minute) == endTime) {
+                    notDockedAvailable = true;
+                    availableWorkers += neededWorkers;
+                }
+            }
+            System.out.println("----------------------------------------------------------------------------------------------------------------------------");
+        }
+        System.out.println("Total penalty cost occurred due to delays: " + penaltyCost);
+        System.out.println("Total setup cost occurred due to foreign trucks: " + setupCost);
+    }
+
+    public static Truck chooseCurrentTruckandRemove(ArrayList<Truck> orderedList, int availableWorkers, int day, int minute) {
+        Truck currentTruck = null;
 
         for (Truck t : orderedList) {
-            if (t.getIsDocked()) {
-                dockedOrderedList.add(t);
-            } else {
-                notDockedOrderedList.add(t);
+            if(t.getIsForeign() && (day == 0 || day == 1 || day == 2)){
+                continue;
+            }
+            if (t.getArrivalTime() <= day * 480 + minute) {
+                for(Truck s: orderedList){
+                    if(s.getIsForeign() && (day == 0 || day == 1 || day == 2)){
+                        continue;
+                    }
+                    if(t.getArrivalTime() == s.getArrivalTime()){
+                        if(t.getDueTime() < s.getDueTime()) {
+                            if (availableWorkers >= t.getNeededWorkers()) {
+                                currentTruck = t;
+                                availableWorkers -= t.getNeededWorkers();
+                            }
+                        } else if(s.getArrivalTime() <= day * 480 + minute) {
+                            if (availableWorkers >= s.getNeededWorkers()) {
+                                currentTruck = s;
+                                availableWorkers -= s.getNeededWorkers();
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        System.out.println("List of docked trucks ordered according to critical ratio and priority: ");
-        System.out.println(" ");
-
-        for (int i = 0; i < dockedOrderedList.size(); i++) {
-            System.out.println("Order: " + (i + 1));
-            System.out.println("Truck ID: " + dockedOrderedList.get(i).getId());
-            System.out.println("Critical ratio: " + String.format("%.2f", dockedOrderedList.get(i).getCriticalRatio()));
-            System.out.println("Priority: " + dockedOrderedList.get(i).getPriority());
-            System.out.println("Process time: " + dockedOrderedList.get(i).getProcessTime());
-            System.out.println("Number of workers needed: " + dockedOrderedList.get(i).getNeededWorkers());
-            System.out.println("Is it a foreign truck? : " + dockedOrderedList.get(i).getIsForeign());
-            System.out.println("---------------------------------------");
-        }
-
-        System.out.println(" ");
-        System.out.println("List of not docked trucks ordered according to critical ratio and priority: ");
-        System.out.println(" ");
-
-        for (int i = 0; i < notDockedOrderedList.size(); i++) {
-            System.out.println("Order: " + (i + 1));
-            System.out.println("Truck ID: " + notDockedOrderedList.get(i).getId());
-            System.out.println("Critical ratio: " + String.format("%.2f", notDockedOrderedList.get(i).getCriticalRatio()));
-            System.out.println("Priority: " + notDockedOrderedList.get(i).getPriority());
-            System.out.println("Process time: " + notDockedOrderedList.get(i).getProcessTime());
-            System.out.println("Number of workers needed: " + notDockedOrderedList.get(i).getNeededWorkers());
-            System.out.println("Is it a foreign truck? : " + notDockedOrderedList.get(i).getIsForeign());
-            System.out.println("---------------------------------------");
-        }
-
+        orderedList.remove(currentTruck);
+        return currentTruck;
     }
-    // en büyük ratio değil en küçük ratio önce olacak ama negatif olanlar sıranın sonunda olacak (negatifler arasında büyük-küçük fark ediyor mu random mu atıyor karar vermek lazım)
-    private static Truck findNextBestRatioAndRemove(HashMap<Truck, Double> criticalRatioList) {
+
+    private static Truck findNextBestArrivalAndRemove(HashMap<Truck, Integer> arrivalTimeList) {
         Truck best = null;
-        double bestRatio = Integer.MAX_VALUE;
-        for (Truck s : criticalRatioList.keySet()) {
-                if (criticalRatioList.get(s) < bestRatio) {
-                    bestRatio = criticalRatioList.get(s);
-                    best = s;
-                }
+
+        int bestArrival = Integer.MAX_VALUE;
+        for (Truck s : arrivalTimeList.keySet()) {
+            if (arrivalTimeList.get(s) <= bestArrival) {
+                bestArrival = arrivalTimeList.get(s);
+                best = s;
+            }
         }
-        criticalRatioList.remove(best);
+
+        arrivalTimeList.remove(best);
         return best;
     }
-
-    public static Truck chooseNextTruckAndRemove(ArrayList<Truck> orderedList, int availableWorkers) {
-        Truck nextTruck = null;
-
-                for (Truck t: orderedList) {
-                    if (availableWorkers >= t.getNeededWorkers()) {
-                        nextTruck = t;
-                    }
-                }
-
-        orderedList.remove(nextTruck);
-        return nextTruck;
-    }
-
-    public static void processWeek(ArrayList<Truck> orderedList) {
-
-        dockedAvailable = false;
-        notDockedAvailable = false;
-        availableWorkers = 5;
-        int dockedStartTime = 0;
-        int notDockedStartTime = 0;
-
-        for (day = 0; day <= 4; day++) {
-            for (minute = 0; minute <= 480; minute++) {
-                for(int aTruck = 0; aTruck < orderedList.size(); aTruck++) {
-
-                    Truck nextTruck = chooseNextTruckAndRemove(orderedList,availableWorkers);
-                    
-                    if (nextTruck.getIsDocked()) {
-                        if (dockedAvailable) {
-                            dockedStartTime = day*480+minute;
-                            do {
-                                dockedAvailable = false;
-                                availableWorkers = availableWorkers - nextTruck.getNeededWorkers();
-                            } while (minute < (dockedStartTime + nextTruck.getProcessTime()));
-                        }
-                        System.out.println(nextTruck.getId());
-                    } else {
-                        if (notDockedAvailable) {
-                            notDockedStartTime = day*480+minute;
-                            do {
-                                notDockedAvailable = false;
-                                availableWorkers = availableWorkers - nextTruck.getNeededWorkers();
-                            } while (minute < (notDockedStartTime + nextTruck.getProcessTime()));
-                        }
-                        System.out.println(nextTruck.getId());
-                    }
-
-                }
-            }
-        }
-
-    }
 }
-
